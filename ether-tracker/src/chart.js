@@ -27,7 +27,7 @@ const Charts = () => {
             chartType="ScatterChart"
             data={data}
             options={options}
-            width="80%"
+            width="800px"
             height="400px"
             legendToggle
         />
