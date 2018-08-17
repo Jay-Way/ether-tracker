@@ -21,8 +21,6 @@ class App extends Component {
               <ExpansionPanel style={{flex: 1, flexDirection: 'column', justifyContent: 'center'}}/>
           </Paper>
       </div>
-
-
     );
   }
 }

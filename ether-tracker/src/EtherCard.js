@@ -13,6 +13,11 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import CardMedia from '@material-ui/core/CardMedia';
 import Divider from '@material-ui/core/Divider';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import SwitchLabels from './switches';
 
 const styles = {
     root: {
@@ -60,12 +65,19 @@ class EtherCard extends Component {
         this.handleButtonRefresh = this.handleButtonRefresh.bind(this);
         this.fetchPrices = this.fetchPrices.bind(this);
         this.fetchSupply = this.fetchSupply.bind(this);
+        this.handleSwitchUsd = this.handleSwitchUsd.bind(this);
+        this.handleSwitchEur = this.handleSwitchEur.bind(this);
+        this.handleSwitchBtc = this.handleSwitchBtc.bind(this);
+
 
         this.state = {
             price: [],
             eur: '',
+            showEur: true,
             usd: '',
+            showUsd: true,
             btc: '',
+            showBtc: true,
             supply: [],
             change: [],
             change1h: '',
@@ -77,22 +89,19 @@ class EtherCard extends Component {
     sliceNumbers(number) {
         // Info: Die '' sind zwei Hochkommas
         number = '' + number;
-        console.log(number);
         if (number.length > 3) {
             let mod = number.length % 3;
             let i;
             let output = (mod > 0 ? (number.substring(0, mod)) : '');
             for (i = 0; i < Math.floor(number.length / 3); i++) {
-                if ((mod == 0) && (i == 0))
+                if ((mod === 0) && (i === 0))
                     output += number.substring(mod + 3 * i, mod + 3 * i + 3);
                 else
 
             // hier wird das Trennzeichen festgelegt mit '.'
                     output += ',' + number.substring(mod + 3 * i, mod + 3 * i + 3);
             }
-            console.log(output);
             return (output);
-
         }
         else return number;
     }
@@ -122,12 +131,6 @@ class EtherCard extends Component {
 
             });
     }
-    colorChanges(){
-        if (this.state.change1h < 0) {
-            let change1hColored = (this.state.change1h.style.color = "green");
-
-        }
-    }
 
     fetchSupply(){
         fetch('https://api.etherscan.io/api?module=stats&action=ethsupply&apikey=2YPV5DF98A5PXVZCMNMDAPYVAB4JZFIKVP')
@@ -143,10 +146,10 @@ class EtherCard extends Component {
 
     componentDidMount() {
         // Seitentitel:
-        document.title = "Ether price";
         this.fetchPrices();
         this.fetchSupply();
         this.fetchPriceChanges();
+        document.title = "Ether Tracker";
         // Alle 10 sekunden neu fetchen und Preise aktualisieren
         this.timer = setInterval(()=> this.fetchPrices(), 10000)
 
@@ -156,22 +159,37 @@ class EtherCard extends Component {
         this.fetchPrices();
         console.log('state usd: '+this.state.usd);
     }
+    handleSwitchUsd(){
+        this.setState(prevState => ({
+            showUsd: !prevState.showUsd
+        }));
+    }
+    handleSwitchEur(){
+        this.setState(prevState => ({
+            showEur: !prevState.showEur
+        }));
+    }
+    handleSwitchBtc(){
+        this.setState(prevState => ({
+            showBtc: !prevState.showBtc
+        }));
+    }
 
 
 
     render() {
-        const {usd, eur, btc, change1h} = this.state;
+        const {usd, eur, btc} = this.state;
         // Ether Supply in Wei umrechnen auf ganze Ether, dann abrunden und mit 1000er Trennzeichen aufteilen
         let supplyInEther = this.sliceNumbers((Math.floor(this.state.supply/1000000000000000000)));
         const primaryColorGreen = theme.palette.primary.green;
         const primaryColorRed = theme.palette.primary.red;
         const styles = {
                     card: {
-                            maxWidth: 770,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            alignSelf: 'center',
-                            marginBottom: 50,
+                        maxWidth: 770,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        alignSelf: 'center',
+                        marginBottom: 50,
                         },
                     div: {
                         display: 'flex',
@@ -199,8 +217,12 @@ class EtherCard extends Component {
                     },
                     changeText: {
                         display: 'inline-block',
-                        margin: 25
-                    }
+                        marginLeft: 25
+                    },
+                    details: {
+                        justifyContent: 'center',
+                        alignSelf: 'center',
+                    },
             };
         return (
             <MuiThemeProvider theme={theme}>
@@ -214,19 +236,26 @@ class EtherCard extends Component {
                         <Divider  style={styles.divider}/>
                     <CardContent>
                         <div>
+                            {this.state.showUsd || this.state.showEur || this.state.showBtc ? (
+                            <div>
                 <Typography variant="display3" component="h3">
                     Current Ether price:
                 </Typography>
-                        <div>
+                            </div>
+                                ) : ( null )}
+                            <div>
                         <Typography variant="display2" component="h2" color="secondary">
-                            {usd}{'$  '}
-                            {eur}{'€  '}
-                            {btc}{'฿  '}
+                            {this.state.showUsd === true ? (
+                                <Typography variant="display2" component="h2" color="secondary">{usd}{'$  '}</Typography>) : ( null )}
+                            {this.state.showEur === true ? (
+                                <Typography variant="display2" component="h2" color="secondary">{eur}{'€  '}</Typography>) : ( null )}
+                            {this.state.showBtc === true ? (
+                                <Typography variant="display2" component="h2" color="secondary">{btc}{'฿  '}</Typography>) : ( null )}
                         </Typography>
-                        <Divider style={styles.divider}/>
+                                {this.state.showUsd || this.state.showEur || this.state.showBtc ? (<Divider style={styles.divider}/>) : ( null ) }
                             <div style={{marginTop: 24}}>
                             <Typography variant="display1" >
-                                Current Supply: {supplyInEther} ETH
+                                Current supply: {supplyInEther} ETH
                             </Typography>
                             </div>
                             <Divider style={styles.divider}/>
@@ -235,11 +264,12 @@ class EtherCard extends Component {
                                     1h change: {
                                     this.state.change1h < 0 ? (
                                         <Typography style={styles.changeMinus} variant="headline">
-                                            {this.state.change1h}
+                                            {this.state.change1h}%
                                         </Typography>
+
                                     ) : (
                                         <Typography style={styles.changePlus} variant="headline">
-                                            {this.state.change1h}
+                                            {this.state.change1h}%
                                         </Typography>
                                     )
 
@@ -250,11 +280,11 @@ class EtherCard extends Component {
                                     24h change: {
                                     this.state.change24h < 0 ? (
                                         <Typography style={styles.changeMinus} variant="headline">
-                                            {this.state.change24h}
+                                            {this.state.change24h}%
                                         </Typography>
                                     ) : (
                                         <Typography style={styles.changePlus} variant="headline">
-                                            {this.state.change24h}
+                                            {this.state.change24h}%
                                         </Typography>
                                     )
 
@@ -265,11 +295,11 @@ class EtherCard extends Component {
                                     7d change: {
                                     this.state.change7d < 0 ? (
                                         <Typography style={styles.changeMinus} variant="headline">
-                                            {this.state.change7d}
+                                            {this.state.change7d}%
                                         </Typography>
                                     ) : (
                                         <Typography style={styles.changePlus} variant="headline">
-                                            {this.state.change7d}
+                                            {this.state.change7d}%
                                         </Typography>
                                     )
 
@@ -280,15 +310,32 @@ class EtherCard extends Component {
                             <CardActions style={styles.button}>
 
                             </CardActions>
-                            <Typography variant="caption" paragraph>
-                                Values are refreshed every 10 seconds
-                            </Typography>
+
                         </div>
-
-
                         </div>
                     </CardContent>
+                    <ExpansionPanel>
+                        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography>Options</Typography>
+                        </ExpansionPanelSummary>
+                        <ExpansionPanelDetails style={styles.details}>
+                            <div>
+                                <SwitchLabels
+                                    showUsd={this.state.showUsd}
+                                    changeUsd={this.handleSwitchUsd}
+                                    showEur={this.state.showEur}
+                                    changeEur={this.handleSwitchEur}
+                                    showBtc={this.state.showBtc}
+                                    changeBtc={this.handleSwitchBtc}
+                                />
+                                <Typography variant="caption" style={{marginTop: 20}}>
+                                    Values are refreshed every 10 seconds
+                                </Typography>
+                            </div>
+                        </ExpansionPanelDetails>
+                    </ExpansionPanel>
                 </Card>
+
             </div>
             </MuiThemeProvider>
         );
