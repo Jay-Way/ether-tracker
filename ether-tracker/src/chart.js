@@ -1,4 +1,4 @@
-import { Chart } from "react-google-charts";
+import Chart from 'react-google-charts';
 import * as React from "react";
 import { render } from "react-dom";
 import Paper from '@material-ui/core/Paper';

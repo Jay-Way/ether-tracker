@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
-
+import { createMuiTheme } from '@material-ui/core/styles';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
@@ -36,6 +37,18 @@ const styles = {
         marginBottom: 12,
     },
 };
+const theme = createMuiTheme({
+    palette: {
+        primary: {
+            main: '#82b1ff',
+            green: '#43a047',
+            red: '#e53935',
+        },
+        secondary: {
+            main: '#212121',
+        }
+    }
+});
 
 
 class EtherCard extends Component {
@@ -54,6 +67,10 @@ class EtherCard extends Component {
             usd: '',
             btc: '',
             supply: [],
+            change: [],
+            change1h: '',
+            change24h: '',
+            change7d: '',
         };
     }
 
@@ -79,8 +96,19 @@ class EtherCard extends Component {
         }
         else return number;
     }
+    // Kein bind nötig:
+    fetchPriceChanges() {
+        fetch('https://api.coinmarketcap.com/v2/ticker/1027/')
+            .then(response => response.json())
+            .then(change => {
+                    this.setState({
+                        change1h:  change.data.quotes.USD.percent_change_1h,
+                        change24h: change.data.quotes.USD.percent_change_24h,
+                        change7d:  change.data.quotes.USD.percent_change_7d,
+                    });
 
-
+                });
+    }
 
     fetchPrices(){
         fetch('https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC,USD,EUR')
@@ -94,6 +122,13 @@ class EtherCard extends Component {
 
             });
     }
+    colorChanges(){
+        if (this.state.change1h < 0) {
+            let change1hColored = (this.state.change1h.style.color = "green");
+
+        }
+    }
+
     fetchSupply(){
         fetch('https://api.etherscan.io/api?module=stats&action=ethsupply&apikey=2YPV5DF98A5PXVZCMNMDAPYVAB4JZFIKVP')
             .then(response => response.json())
@@ -111,6 +146,7 @@ class EtherCard extends Component {
         document.title = "Ether price";
         this.fetchPrices();
         this.fetchSupply();
+        this.fetchPriceChanges();
         // Alle 10 sekunden neu fetchen und Preise aktualisieren
         this.timer = setInterval(()=> this.fetchPrices(), 10000)
 
@@ -124,8 +160,11 @@ class EtherCard extends Component {
 
 
     render() {
-        const {usd, eur, btc} = this.state;
+        const {usd, eur, btc, change1h} = this.state;
+        // Ether Supply in Wei umrechnen auf ganze Ether, dann abrunden und mit 1000er Trennzeichen aufteilen
         let supplyInEther = this.sliceNumbers((Math.floor(this.state.supply/1000000000000000000)));
+        const primaryColorGreen = theme.palette.primary.green;
+        const primaryColorRed = theme.palette.primary.red;
         const styles = {
                     card: {
                             maxWidth: 770,
@@ -151,9 +190,20 @@ class EtherCard extends Component {
                     button: {
                         justifyContent: 'center',
                         alignSelf: 'center',
+                    },
+                    changePlus: {
+                        color: primaryColorGreen
+                    },
+                    changeMinus: {
+                        color: primaryColorRed
+                    },
+                    changeText: {
+                        display: 'inline-block',
+                        margin: 25
                     }
             };
         return (
+            <MuiThemeProvider theme={theme}>
             <div style={styles.div} >
                 <Card style={styles.card}>
                     <CardMedia
@@ -168,17 +218,64 @@ class EtherCard extends Component {
                     Current Ether price:
                 </Typography>
                         <div>
-                        <Typography variant="display2" component="h2">
-                             {usd}{'$ '}
-                            {eur}{'€ '}
-                            {btc}{'฿ '}
+                        <Typography variant="display2" component="h2" color="secondary">
+                            {usd}{'$  '}
+                            {eur}{'€  '}
+                            {btc}{'฿  '}
                         </Typography>
-
                         <Divider style={styles.divider}/>
                             <div style={{marginTop: 24}}>
                             <Typography variant="display1" >
-                                Current Supply: {supplyInEther}ETH
+                                Current Supply: {supplyInEther} ETH
                             </Typography>
+                            </div>
+                            <Divider style={styles.divider}/>
+                            <div style={{marginTop: 24}}>
+                                <Typography variant="headline" style={styles.changeText}>
+                                    1h change: {
+                                    this.state.change1h < 0 ? (
+                                        <Typography style={styles.changeMinus} variant="headline">
+                                            {this.state.change1h}
+                                        </Typography>
+                                    ) : (
+                                        <Typography style={styles.changePlus} variant="headline">
+                                            {this.state.change1h}
+                                        </Typography>
+                                    )
+
+
+                                }
+                                </Typography>
+                                <Typography variant="headline" style={styles.changeText}>
+                                    24h change: {
+                                    this.state.change24h < 0 ? (
+                                        <Typography style={styles.changeMinus} variant="headline">
+                                            {this.state.change24h}
+                                        </Typography>
+                                    ) : (
+                                        <Typography style={styles.changePlus} variant="headline">
+                                            {this.state.change24h}
+                                        </Typography>
+                                    )
+
+
+                                }
+                                </Typography>
+                                <Typography variant="headline" style={styles.changeText}>
+                                    7d change: {
+                                    this.state.change7d < 0 ? (
+                                        <Typography style={styles.changeMinus} variant="headline">
+                                            {this.state.change7d}
+                                        </Typography>
+                                    ) : (
+                                        <Typography style={styles.changePlus} variant="headline">
+                                            {this.state.change7d}
+                                        </Typography>
+                                    )
+
+
+                                }
+                                </Typography>
                             </div>
                             <CardActions style={styles.button}>
 
@@ -193,6 +290,7 @@ class EtherCard extends Component {
                     </CardContent>
                 </Card>
             </div>
+            </MuiThemeProvider>
         );
     }
 }

@@ -50,6 +50,17 @@ function SimpleExpansionPanel(props) {
                 </ExpansionPanelDetails>
             </ExpansionPanel>
 
+            <ExpansionPanel>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography className={classes.heading}>Portfolio</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails style={styles.details}>
+                    <div>
+                        Test
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+
         </div>
     );
 }
