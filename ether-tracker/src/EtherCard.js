@@ -2,12 +2,8 @@ import React, { Component } from 'react';
 import './App.css';
 import { createMuiTheme } from '@material-ui/core/styles';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Refresh from '@material-ui/icons/Refresh';
-import Euro from '@material-ui/icons/EuroSymbol';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
@@ -17,7 +13,9 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import SwitchLabels from './switches';
+import PriceSwitches from './priceSwitches';
+import SupplySwitch from './supplySwitch';
+
 
 const styles = {
     root: {
@@ -61,13 +59,10 @@ class EtherCard extends Component {
     constructor(props) {
         super(props);
 
-        this.componentDidMount = this.componentDidMount.bind(this);
-        this.handleButtonRefresh = this.handleButtonRefresh.bind(this);
-        this.fetchPrices = this.fetchPrices.bind(this);
-        this.fetchSupply = this.fetchSupply.bind(this);
         this.handleSwitchUsd = this.handleSwitchUsd.bind(this);
         this.handleSwitchEur = this.handleSwitchEur.bind(this);
         this.handleSwitchBtc = this.handleSwitchBtc.bind(this);
+        this.handleSwitchSupply = this.handleSwitchSupply.bind(this);
 
 
         this.state = {
@@ -79,6 +74,7 @@ class EtherCard extends Component {
             btc: '',
             showBtc: true,
             supply: [],
+            showSupply: true,
             change: [],
             change1h: '',
             change24h: '',
@@ -105,7 +101,6 @@ class EtherCard extends Component {
         }
         else return number;
     }
-    // Kein bind nötig:
     fetchPriceChanges() {
         fetch('https://api.coinmarketcap.com/v2/ticker/1027/')
             .then(response => response.json())
@@ -139,26 +134,25 @@ class EtherCard extends Component {
                 this.setState({
                     supply: supply.result
                 });
-                console.log('state sup: '+this.state.supply);
+                console.log('Supply: '+this.state.supply+' Wei');
             });
 
+    }
+    fetchAll(){
+        this.fetchPrices();
+        this.fetchSupply();
+        this.fetchPriceChanges();
     }
 
     componentDidMount() {
         // Seitentitel:
-        this.fetchPrices();
-        this.fetchSupply();
-        this.fetchPriceChanges();
+        this.fetchAll();
         document.title = "Ether Tracker";
-        // Alle 10 sekunden neu fetchen und Preise aktualisieren
-        this.timer = setInterval(()=> this.fetchPrices(), 10000)
+        // Alle 10 sekunden neu fetchen
+        this.timer = setInterval(()=> this.fetchAll(), 10000)
 
     }
 
-    handleButtonRefresh(){
-        this.fetchPrices();
-        console.log('state usd: '+this.state.usd);
-    }
     handleSwitchUsd(){
         this.setState(prevState => ({
             showUsd: !prevState.showUsd
@@ -174,13 +168,18 @@ class EtherCard extends Component {
             showBtc: !prevState.showBtc
         }));
     }
+    handleSwitchSupply(){
+        this.setState(prevState => ({
+            showSupply: !prevState.showSupply
+        }));
+    }
 
 
 
     render() {
         const {usd, eur, btc} = this.state;
         // Ether Supply in Wei umrechnen auf ganze Ether, dann abrunden und mit 1000er Trennzeichen aufteilen
-        let supplyInEther = this.sliceNumbers((Math.floor(this.state.supply/1000000000000000000)));
+        let supplyInEther = this.sliceNumbers((Math.round(this.state.supply/1000000000000000000)));
         const primaryColorGreen = theme.palette.primary.green;
         const primaryColorRed = theme.palette.primary.red;
         const styles = {
@@ -201,9 +200,7 @@ class EtherCard extends Component {
                         paddingTop: '40%', // 16:9
                     },
                     divider: {
-                        marginRight: 24,
-                        marginLeft: 24,
-                        marginTop: 25
+                        margin: 14,
                     },
                     button: {
                         justifyContent: 'center',
@@ -217,7 +214,8 @@ class EtherCard extends Component {
                     },
                     changeText: {
                         display: 'inline-block',
-                        marginLeft: 25
+                        marginLeft: 25,
+                        marginTop: 4
                     },
                     details: {
                         justifyContent: 'center',
@@ -244,36 +242,39 @@ class EtherCard extends Component {
                             </div>
                                 ) : ( null )}
                             <div>
-                        <Typography variant="display2" component="h2" color="secondary">
                             {this.state.showUsd === true ? (
-                                <Typography variant="display2" component="h2" color="secondary">{usd}{'$  '}</Typography>) : ( null )}
+                                <Typography variant="display3" component="h2" color="secondary" style={{margin: 10}}>{usd}{'$'}</Typography>) : ( null )}
                             {this.state.showEur === true ? (
-                                <Typography variant="display2" component="h2" color="secondary">{eur}{'€  '}</Typography>) : ( null )}
+                                <Typography variant="display3" component="h2" color="secondary" style={{margin: 10}}>{eur}{'€'}</Typography>) : ( null )}
                             {this.state.showBtc === true ? (
-                                <Typography variant="display2" component="h2" color="secondary">{btc}{'฿  '}</Typography>) : ( null )}
-                        </Typography>
+                                <Typography variant="display3" component="h2" color="secondary" style={{margin: 10}}>{btc}{'฿'}</Typography>) : ( null )}
                                 {this.state.showUsd || this.state.showEur || this.state.showBtc ? (<Divider style={styles.divider}/>) : ( null ) }
                             <div style={{marginTop: 24}}>
-                            <Typography variant="display1" >
-                                Current supply: {supplyInEther} ETH
-                            </Typography>
+                                {this.state.showSupply ? (
+                                    <div>
+                                    <Typography variant="display1">
+                                        Current supply: {supplyInEther} ETH
+                                    </Typography>
+                                        <Divider style={{margin: 14, marginTop: 24}}/>
+                                    </div>
+
+                                ) : (null)
+                                }
                             </div>
-                            <Divider style={styles.divider}/>
+
                             <div style={{marginTop: 24}}>
+
                                 <Typography variant="headline" style={styles.changeText}>
                                     1h change: {
                                     this.state.change1h < 0 ? (
                                         <Typography style={styles.changeMinus} variant="headline">
                                             {this.state.change1h}%
                                         </Typography>
-
                                     ) : (
                                         <Typography style={styles.changePlus} variant="headline">
                                             {this.state.change1h}%
                                         </Typography>
                                     )
-
-
                                 }
                                 </Typography>
                                 <Typography variant="headline" style={styles.changeText}>
@@ -287,8 +288,6 @@ class EtherCard extends Component {
                                             {this.state.change24h}%
                                         </Typography>
                                     )
-
-
                                 }
                                 </Typography>
                                 <Typography variant="headline" style={styles.changeText}>
@@ -302,15 +301,11 @@ class EtherCard extends Component {
                                             {this.state.change7d}%
                                         </Typography>
                                     )
-
-
                                 }
                                 </Typography>
                             </div>
                             <CardActions style={styles.button}>
-
                             </CardActions>
-
                         </div>
                         </div>
                     </CardContent>
@@ -319,8 +314,8 @@ class EtherCard extends Component {
                             <Typography>Options</Typography>
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails style={styles.details}>
-                            <div>
-                                <SwitchLabels
+                            <div style={styles.div}>
+                                <PriceSwitches
                                     showUsd={this.state.showUsd}
                                     changeUsd={this.handleSwitchUsd}
                                     showEur={this.state.showEur}
@@ -328,8 +323,19 @@ class EtherCard extends Component {
                                     showBtc={this.state.showBtc}
                                     changeBtc={this.handleSwitchBtc}
                                 />
+                                <Divider style={styles.divider}/>
+                                <div>
+                                <SupplySwitch
+
+                                    showSupply={this.state.showSupply}
+                                    changeSupply={this.handleSwitchSupply}
+                                />
+                                </div>
                                 <Typography variant="caption" style={{marginTop: 20}}>
                                     Values are refreshed every 10 seconds
+                                </Typography>
+                                <Typography variant="caption">
+                                    Data from coinmarketcap, etherscan and cryptocompare.
                                 </Typography>
                             </div>
                         </ExpansionPanelDetails>

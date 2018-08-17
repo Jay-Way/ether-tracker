@@ -16,7 +16,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-          <Paper style={{flex: 1, flexDirection: 'column', margin: 25, padding: 25}}>
+          <Paper style={{flex: 1, flexDirection: 'column', margin: 0, padding: 10}}>
             <EtherCard />
               <ExpansionPanel style={{flex: 1, flexDirection: 'column', justifyContent: 'center'}}/>
           </Paper>

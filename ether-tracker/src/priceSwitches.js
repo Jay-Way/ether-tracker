@@ -3,25 +3,15 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 
-class SwitchLabels extends React.Component {
-    state = {
-        checkedA: true,
-        checkedB: true,
-    };
+function priceSwitches(props) {
 
-    handleChange () {
-        this.props.changeUsd();
-    };
-
-
-    render() {
         return (
             <FormGroup row>
                 <FormControlLabel
                     control={
                         <Switch
-                            checked={this.props.showUsd}
-                            onChange={this.props.changeUsd}
+                            checked={props.showUsd}
+                            onChange={props.changeUsd}
                             value="showUsd"
                             color="primary"
                         />
@@ -31,8 +21,8 @@ class SwitchLabels extends React.Component {
                 <FormControlLabel
                     control={
                         <Switch
-                            checked={this.props.showEur}
-                            onChange={this.props.changeEur}
+                            checked={props.showEur}
+                            onChange={props.changeEur}
                             value="showEur"
                             color="primary"
                         />
@@ -42,8 +32,8 @@ class SwitchLabels extends React.Component {
                 <FormControlLabel
                     control={
                         <Switch
-                            checked={this.props.showBtc}
-                            onChange={this.props.changeBtc}
+                            checked={props.showBtc}
+                            onChange={props.changeBtc}
                             value="showBtc"
                             color="primary"
                         />
@@ -53,7 +43,6 @@ class SwitchLabels extends React.Component {
 
             </FormGroup>
         );
-    }
 }
 
-export default SwitchLabels;
+export default priceSwitches;
