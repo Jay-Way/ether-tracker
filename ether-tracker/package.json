@@ -1,21 +1,15 @@
 {
   "name": "ether-tracker",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).",
+  "main": "index.js",
   "dependencies": {
-    "@material-ui/core": "^1.5.0",
-    "@material-ui/icons": "^2.0.2",
-    "material-ui": "^1.0.0-beta.47",
-    "react": "^16.4.2",
-    "react-dom": "^16.4.2",
-    "react-google-charts": "^3.0.4",
-    "react-scripts": "1.1.4"
+    "material-ui": "^1.0.0-beta.47"
   },
+  "devDependencies": {},
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "."
+  "author": "",
+  "license": "ISC"
 }
