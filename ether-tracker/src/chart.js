@@ -1,5 +1,4 @@
-import Chart from 'react-google-charts';
-import * as React from "react";
+/*import * as React from "react";
 import { render } from "react-dom";
 import Paper from '@material-ui/core/Paper';
 
@@ -35,4 +34,4 @@ const Charts = () => {
     );
 };
 
-export default Charts;
+export default Charts;*/

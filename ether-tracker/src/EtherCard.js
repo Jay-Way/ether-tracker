@@ -15,6 +15,7 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PriceSwitches from './priceSwitches';
 import SupplySwitch from './supplySwitch';
+import ChangeSwitch from './changeSwitch';
 
 
 const styles = {
@@ -62,7 +63,9 @@ class EtherCard extends Component {
         this.handleSwitchUsd = this.handleSwitchUsd.bind(this);
         this.handleSwitchEur = this.handleSwitchEur.bind(this);
         this.handleSwitchBtc = this.handleSwitchBtc.bind(this);
+        this.handleSwitchChange = this.handleSwitchChange.bind(this);
         this.handleSwitchSupply = this.handleSwitchSupply.bind(this);
+        this.fetchVolume = this.fetchVolume.bind(this);
 
 
         this.state = {
@@ -79,6 +82,8 @@ class EtherCard extends Component {
             change1h: '',
             change24h: '',
             change7d: '',
+            showChange: true,
+            volume: ''
         };
     }
 
@@ -113,6 +118,17 @@ class EtherCard extends Component {
 
                 });
     }
+    fetchVolume() {
+        fetch('https://api.coinmarketcap.com/v2/ticker/1027/',
+            )
+            .then(response => response.json())
+            .then(volume => {
+                this.setState({
+                    volume:  volume.data.quotes.USD.volume_24h,
+                });
+
+            });
+            }
 
     fetchPrices(){
         fetch('https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC,USD,EUR')
@@ -142,6 +158,7 @@ class EtherCard extends Component {
         this.fetchPrices();
         this.fetchSupply();
         this.fetchPriceChanges();
+        this.fetchVolume();
     }
 
     componentDidMount() {
@@ -173,6 +190,11 @@ class EtherCard extends Component {
             showSupply: !prevState.showSupply
         }));
     }
+    handleSwitchChange(){
+        this.setState(prevState => ({
+            showChange: !prevState.showChange
+        }));
+    }
 
 
 
@@ -180,6 +202,7 @@ class EtherCard extends Component {
         const {usd, eur, btc} = this.state;
         // Ether Supply in Wei umrechnen auf ganze Ether, dann abrunden und mit 1000er Trennzeichen aufteilen
         let supplyInEther = this.sliceNumbers((Math.round(this.state.supply/1000000000000000000)));
+        let volume = this.sliceNumbers((Math.round(this.state.volume)));
         const primaryColorGreen = theme.palette.primary.green;
         const primaryColorRed = theme.palette.primary.red;
         const styles = {
@@ -188,7 +211,6 @@ class EtherCard extends Component {
                         justifyContent: 'center',
                         alignItems: 'center',
                         alignSelf: 'center',
-                        marginBottom: 50,
                         },
                     div: {
                         display: 'flex',
@@ -197,7 +219,7 @@ class EtherCard extends Component {
                     },
                     media: {
                         height: 0,
-                        paddingTop: '40%', // 16:9
+                        paddingTop: '56.25%', // 16:9
                     },
                     divider: {
                         margin: 14,
@@ -221,6 +243,9 @@ class EtherCard extends Component {
                         justifyContent: 'center',
                         alignSelf: 'center',
                     },
+                    volumeText: {
+                        marginTop: 24
+                    }
             };
         return (
             <MuiThemeProvider theme={theme}>
@@ -228,15 +253,14 @@ class EtherCard extends Component {
                 <Card style={styles.card}>
                     <CardMedia
                         style={styles.media}
-                        image="https://i.imgur.com/xBssBT5.png"
+                        image="https://www.ethereum.org/images/logos/ETHEREUM-LOGO_LANDSCAPE_Black.png"
                         title="Ethereum"
                     />
-                        <Divider  style={styles.divider}/>
+
                     <CardContent>
-                        <div>
                             {this.state.showUsd || this.state.showEur || this.state.showBtc ? (
                             <div>
-                <Typography variant="display3" component="h3">
+                <Typography variant="display2" component="h2" color="secondary">
                     Current Ether price:
                 </Typography>
                             </div>
@@ -248,65 +272,71 @@ class EtherCard extends Component {
                                 <Typography variant="display3" component="h2" color="secondary" style={{margin: 10}}>{eur}{'€'}</Typography>) : ( null )}
                             {this.state.showBtc === true ? (
                                 <Typography variant="display3" component="h2" color="secondary" style={{margin: 10}}>{btc}{'฿'}</Typography>) : ( null )}
-                                {this.state.showUsd || this.state.showEur || this.state.showBtc ? (<Divider style={styles.divider}/>) : ( null ) }
                             <div style={{marginTop: 24}}>
+
+
                                 {this.state.showSupply ? (
                                     <div>
-                                    <Typography variant="display1">
+                                    <Typography variant="headline">
                                         Current supply: {supplyInEther} ETH
                                     </Typography>
-                                        <Divider style={{margin: 14, marginTop: 24}}/>
+
                                     </div>
 
                                 ) : (null)
                                 }
                             </div>
+                                {this.state.showChange ? (
 
-                            <div style={{marginTop: 24}}>
+                                    <div style={{marginTop: 24}}>
 
-                                <Typography variant="headline" style={styles.changeText}>
-                                    1h change: {
-                                    this.state.change1h < 0 ? (
-                                        <Typography style={styles.changeMinus} variant="headline">
-                                            {this.state.change1h}%
+                                        <Typography variant="headline" style={styles.changeText}>
+                                            1h change: {
+                                            this.state.change1h < 0 ? (
+                                                <Typography style={styles.changeMinus} variant="headline">
+                                                    {this.state.change1h}%
+                                                </Typography>
+                                            ) : (
+                                                <Typography style={styles.changePlus} variant="headline">
+                                                    {this.state.change1h}%
+                                                </Typography>
+                                            )
+                                        }
                                         </Typography>
-                                    ) : (
-                                        <Typography style={styles.changePlus} variant="headline">
-                                            {this.state.change1h}%
+                                        <Typography variant="headline" style={styles.changeText}>
+                                            24h change: {
+                                            this.state.change24h < 0 ? (
+                                                <Typography style={styles.changeMinus} variant="headline">
+                                                    {this.state.change24h}%
+                                                </Typography>
+                                            ) : (
+                                                <Typography style={styles.changePlus} variant="headline">
+                                                    {this.state.change24h}%
+                                                </Typography>
+                                            )
+                                        }
                                         </Typography>
-                                    )
+                                        <Typography variant="headline" style={styles.changeText}>
+                                            7d change: {
+                                            this.state.change7d < 0 ? (
+                                                <Typography style={styles.changeMinus} variant="headline">
+                                                    {this.state.change7d}%
+                                                </Typography>
+                                            ) : (
+                                                <Typography style={styles.changePlus} variant="headline">
+                                                    {this.state.change7d}%
+                                                </Typography>
+                                            )
+                                        }
+                                        </Typography>
+                                        <Typography variant="headline" style={styles.volumeText}>
+                                            24h Volume: {volume}$
+                                        </Typography>
+                                    </div>
+                                ) : (null)
                                 }
-                                </Typography>
-                                <Typography variant="headline" style={styles.changeText}>
-                                    24h change: {
-                                    this.state.change24h < 0 ? (
-                                        <Typography style={styles.changeMinus} variant="headline">
-                                            {this.state.change24h}%
-                                        </Typography>
-                                    ) : (
-                                        <Typography style={styles.changePlus} variant="headline">
-                                            {this.state.change24h}%
-                                        </Typography>
-                                    )
-                                }
-                                </Typography>
-                                <Typography variant="headline" style={styles.changeText}>
-                                    7d change: {
-                                    this.state.change7d < 0 ? (
-                                        <Typography style={styles.changeMinus} variant="headline">
-                                            {this.state.change7d}%
-                                        </Typography>
-                                    ) : (
-                                        <Typography style={styles.changePlus} variant="headline">
-                                            {this.state.change7d}%
-                                        </Typography>
-                                    )
-                                }
-                                </Typography>
-                            </div>
                             <CardActions style={styles.button}>
                             </CardActions>
-                        </div>
                         </div>
                     </CardContent>
                     <ExpansionPanel>
@@ -331,6 +361,13 @@ class EtherCard extends Component {
                                     changeSupply={this.handleSwitchSupply}
                                 />
                                 </div>
+                                <div>
+                                <ChangeSwitch
+
+                                    showChange={this.state.showChange}
+                                    changeChange={this.handleSwitchChange}
+                                />
+                            </div>
                                 <Typography variant="caption" style={{marginTop: 20}}>
                                     Values are refreshed every 10 seconds
                                 </Typography>
