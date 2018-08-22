@@ -16,6 +16,6 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "homepage" : "http://jay-way.gitlab.io/ether-tracker",
-  }
+  },
+  "homepage": "."
 }
